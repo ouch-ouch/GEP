@@ -62,7 +62,7 @@ export default function Navigation() {
             className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl transition-all hover:opacity-90 active:opacity-80"
             style={{ backgroundColor: '#0A66C2' }}
           >
-            <div className="relative w-7 h-7 rounded-full overflow-hidden ring-2 flex-shrink-0" style={{ ringColor: 'rgba(255,255,255,0.3)' }}>
+            <div className="relative w-7 h-7 rounded-full overflow-hidden ring-2 ring-white/30 flex-shrink-0">
               <Image
                 src="/sushant.png"
                 alt="Sushant Burkule"
