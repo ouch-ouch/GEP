@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ArrowRight, Loader2, AlertCircle, ChevronDown } from 'lucide-react';
 import AgentThinkingPanel from '@/components/AgentThinkingPanel';
@@ -27,6 +27,41 @@ export default function DashboardPage() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
+  // Restore persisted state on mount
+  useEffect(() => {
+    try {
+      const savedQuery = localStorage.getItem('gep-query');
+      const savedReport = localStorage.getItem('gep-report');
+      const savedToolCalls = localStorage.getItem('gep-toolcalls');
+      const savedElapsed = localStorage.getItem('gep-elapsed');
+      if (savedQuery) setQuery(savedQuery);
+      if (savedReport) {
+        setReport(JSON.parse(savedReport));
+        setStatus('done');
+      }
+      if (savedToolCalls) setToolCalls(JSON.parse(savedToolCalls));
+      if (savedElapsed) setElapsed(Number(savedElapsed));
+    } catch { /* ignore parse errors */ }
+  }, []);
+
+  // Persist query as user types
+  useEffect(() => {
+    localStorage.setItem('gep-query', query);
+  }, [query]);
+
+  // Persist completed report and tool calls
+  useEffect(() => {
+    if (report) localStorage.setItem('gep-report', JSON.stringify(report));
+  }, [report]);
+
+  useEffect(() => {
+    if (toolCalls.length > 0) localStorage.setItem('gep-toolcalls', JSON.stringify(toolCalls));
+  }, [toolCalls]);
+
+  useEffect(() => {
+    if (elapsed > 0) localStorage.setItem('gep-elapsed', String(elapsed));
+  }, [elapsed]);
+
   const upsertToolCall = useCallback((patch: Partial<ToolCallEvent> & { id: string }) => {
     setToolCalls(prev => {
       const idx = prev.findIndex(t => t.id === patch.id);
@@ -47,6 +82,9 @@ export default function DashboardPage() {
     setToolCalls([]);
     setReport(null);
     setErrorMsg('');
+    localStorage.removeItem('gep-report');
+    localStorage.removeItem('gep-toolcalls');
+    localStorage.removeItem('gep-elapsed');
 
     const t0 = Date.now();
     setStartTime(t0);
